@@ -9,6 +9,7 @@ const DEFAULT_WARNINGS = [
 const REARM_DELTA_KMH = 5;
 const LOCAL_STORAGE_KEY = "speed-alert-pwa-settings-v1";
 const MAX_WARNINGS = 12;
+const ACTIVE_NOTIFICATION_TAG = "speed-alert-monitoring";
 
 const SOUND_OPTIONS = [
   { value: "chirp", label: "Chirp" },
@@ -101,12 +102,79 @@ export default function SpeedAlertPwa() {
     });
   }, []);
 
+  const isAppInstalled = useCallback(() => {
+    if (typeof window === "undefined") return false;
+    const standaloneMedia = window.matchMedia?.("(display-mode: standalone)")?.matches;
+    const iosStandalone = window.navigator.standalone === true;
+    const twaStandalone = document.referrer?.startsWith("android-app://");
+    return Boolean(standaloneMedia || iosStandalone || twaStandalone);
+  }, []);
+
+  const showMonitoringNotification = useCallback(async (speedKmh, gpsState) => {
+    if (!("serviceWorker" in navigator) || !("Notification" in window)) {
+      return;
+    }
+
+    if (Notification.permission === "default") {
+      try {
+        await Notification.requestPermission();
+      } catch {
+        return;
+      }
+    }
+
+    if (Notification.permission !== "granted") {
+      return;
+    }
+
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      await registration.showNotification("Speed Alert active", {
+        body: `Speed ${formatSpeed(speedKmh)} km/h • GPS ${gpsState}`,
+        tag: ACTIVE_NOTIFICATION_TAG,
+        renotify: false,
+        requireInteraction: true,
+        icon: "/icons/icon.svg",
+        badge: "/icons/icon.svg",
+      });
+    } catch (error) {
+      appendLog(`Notification failed: ${error.message}`);
+    }
+  }, [appendLog]);
+
+  const clearMonitoringNotification = useCallback(async () => {
+    if (!("serviceWorker" in navigator)) {
+      return;
+    }
+
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const notifications = await registration.getNotifications({
+        tag: ACTIVE_NOTIFICATION_TAG,
+      });
+      notifications.forEach((entry) => entry.close());
+    } catch {
+      // no-op
+    }
+  }, []);
+
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sortedWarnings));
   }, [sortedWarnings]);
 
   useEffect(() => {
+    if (isAppInstalled()) {
+      setInstallState("installed");
+      setDeferredInstallPrompt(null);
+      return;
+    }
+
     const onBeforeInstall = (event) => {
+      if (isAppInstalled()) {
+        setInstallState("installed");
+        setDeferredInstallPrompt(null);
+        return;
+      }
       event.preventDefault();
       setDeferredInstallPrompt(event);
       setInstallState("available");
@@ -122,11 +190,36 @@ export default function SpeedAlertPwa() {
     window.addEventListener("beforeinstallprompt", onBeforeInstall);
     window.addEventListener("appinstalled", onInstalled);
 
+    const standaloneQuery = window.matchMedia?.("(display-mode: standalone)");
+    const onStandaloneChange = () => {
+      if (isAppInstalled()) {
+        setInstallState("installed");
+        setDeferredInstallPrompt(null);
+      }
+    };
+    standaloneQuery?.addEventListener?.("change", onStandaloneChange);
+
     return () => {
       window.removeEventListener("beforeinstallprompt", onBeforeInstall);
       window.removeEventListener("appinstalled", onInstalled);
+      standaloneQuery?.removeEventListener?.("change", onStandaloneChange);
     };
-  }, [appendLog]);
+  }, [appendLog, isAppInstalled]);
+
+  useEffect(() => {
+    if (!isMonitoring) {
+      clearMonitoringNotification();
+      return;
+    }
+
+    showMonitoringNotification(currentSpeedKmh, gpsStatus);
+
+    const timer = window.setInterval(() => {
+      showMonitoringNotification(currentSpeedKmh, gpsStatus);
+    }, 15000);
+
+    return () => window.clearInterval(timer);
+  }, [clearMonitoringNotification, currentSpeedKmh, gpsStatus, isMonitoring, showMonitoringNotification]);
 
   useEffect(() => {
     let cancelled = false;
@@ -350,8 +443,9 @@ export default function SpeedAlertPwa() {
     startedAtRef.current = null;
     setIsMonitoring(false);
     setGpsStatus("idle");
+    await clearMonitoringNotification();
     appendLog("Monitoring stopped");
-  }, [appendLog, releaseWakeLock]);
+  }, [appendLog, clearMonitoringNotification, releaseWakeLock]);
 
   const startMonitoring = useCallback(async () => {
     if (!navigator.geolocation?.watchPosition) {
@@ -372,6 +466,7 @@ export default function SpeedAlertPwa() {
     startedAtRef.current = Date.now();
     setGpsStatus("acquiring");
     setIsMonitoring(true);
+    await showMonitoringNotification(null, "acquiring");
     appendLog("Monitoring started");
 
     watchIdRef.current = navigator.geolocation.watchPosition(
@@ -403,16 +498,17 @@ export default function SpeedAlertPwa() {
         timeout: 3000,
       }
     );
-  }, [appendLog, computeFallbackSpeed, ensureAudioContext, evaluateWarnings, requestWakeLock, sortedWarnings]);
+  }, [appendLog, computeFallbackSpeed, ensureAudioContext, evaluateWarnings, requestWakeLock, showMonitoringNotification, sortedWarnings]);
 
   useEffect(() => {
     return () => {
       if (watchIdRef.current != null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
       }
+      clearMonitoringNotification();
       releaseWakeLock();
     };
-  }, [releaseWakeLock]);
+  }, [clearMonitoringNotification, releaseWakeLock]);
 
   const addWarning = () => {
     if (warnings.length >= MAX_WARNINGS) return;
@@ -573,13 +669,15 @@ export default function SpeedAlertPwa() {
                 Test speaker
               </button>
 
-              <button
-                onClick={promptInstall}
-                disabled={!deferredInstallPrompt || installState === "installed"}
-                className="rounded-2xl border border-sky-400/50 px-4 py-3 text-base font-medium text-sky-200 transition hover:bg-sky-500/10 disabled:cursor-not-allowed disabled:opacity-50 sm:px-5 sm:py-4"
-              >
-                Install app
-              </button>
+              {installState !== "installed" && (
+                <button
+                  onClick={promptInstall}
+                  disabled={!deferredInstallPrompt}
+                  className="rounded-2xl border border-sky-400/50 px-4 py-3 text-base font-medium text-sky-200 transition hover:bg-sky-500/10 disabled:cursor-not-allowed disabled:opacity-50 sm:px-5 sm:py-4"
+                >
+                  Install app
+                </button>
+              )}
             </div>
 
             <div className="mt-6 rounded-3xl border border-slate-800 bg-slate-950/50 p-4">
