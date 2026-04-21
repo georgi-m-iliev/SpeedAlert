@@ -6,7 +6,7 @@
     </linearGradient>
   </defs>
   <rect width="512" height="512" rx="120" fill="url(#bg)"/>
-  <circle cx="256" cy="280" r="132" fill="none" stroke="#e2e8f0" stroke-width="28"/>
-  <line x1="256" y1="280" x2="360" y2="210" stroke="#f8fafc" stroke-width="24" stroke-linecap="round"/>
-  <circle cx="256" cy="280" r="20" fill="#f8fafc"/>
+  <circle cx="256" cy="256" r="132" fill="none" stroke="#e2e8f0" stroke-width="28"/>
+  <line x1="256" y1="256" x2="360" y2="186" stroke="#f8fafc" stroke-width="24" stroke-linecap="round"/>
+  <circle cx="256" cy="256" r="20" fill="#f8fafc"/>
 </svg>

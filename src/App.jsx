@@ -30,7 +30,7 @@ function kmhFromMps(mps) {
 }
 
 function formatSpeed(value) {
-  return value == null || Number.isNaN(value) ? "--.-" : value.toFixed(1);
+  return value == null || Number.isNaN(value) ? "--" : String(Math.round(value));
 }
 
 function getStoredSettings() {
@@ -62,9 +62,9 @@ function AppBadge({ label, value, tone = "neutral" }) {
   };
 
   return (
-    <div className={`rounded-2xl border px-4 py-3 ${toneMap[tone]}`}>
-      <div className="text-xs uppercase tracking-[0.2em] text-slate-400">{label}</div>
-      <div className="mt-1 text-sm font-medium">{value}</div>
+    <div className={`rounded-2xl border px-3 py-2.5 ${toneMap[tone]}`}>
+      <div className="text-[11px] uppercase tracking-[0.2em] text-slate-400">{label}</div>
+      <div className="mt-1 text-sm font-medium leading-tight">{value}</div>
     </div>
   );
 }
@@ -492,13 +492,13 @@ export default function SpeedAlertPwa() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto max-w-6xl p-4 md:p-8">
-        <div className="mb-6 rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6 shadow-2xl shadow-slate-950/50 backdrop-blur">
+      <div className="mx-auto max-w-6xl p-3 sm:p-4 md:p-8">
+        <div className="mb-4 rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-4 shadow-2xl shadow-slate-950/50 backdrop-blur sm:mb-6 sm:p-6">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-sm uppercase tracking-[0.3em] text-sky-300">Speed Alert PWA</p>
-              <h1 className="mt-2 text-3xl font-semibold md:text-5xl">GPS speed tones for your course drills</h1>
-              <p className="mt-3 max-w-2xl text-slate-300">
+              <h1 className="mt-2 text-2xl font-semibold sm:text-3xl md:text-5xl">GPS speed tones for your course drills</h1>
+              <p className="mt-3 max-w-2xl text-sm text-slate-300 sm:text-base">
                 Fast threshold alerts, 5 km/h re-arm logic, screen wake lock, and install support.
               </p>
             </div>
@@ -514,38 +514,38 @@ export default function SpeedAlertPwa() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/30">
-            <div className="flex items-center justify-between gap-4">
-              <div>
+          <section className="rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-4 shadow-xl shadow-slate-950/30 sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
                 <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Live speed</p>
-                <div className="mt-2 flex items-end gap-3">
-                  <span className="text-7xl font-semibold tabular-nums md:text-8xl">{formatSpeed(currentSpeedKmh)}</span>
-                  <span className="pb-3 text-2xl text-slate-400">km/h</span>
+                <div className="mt-2 flex items-end gap-2 sm:gap-3">
+                  <span className="text-5xl font-semibold tabular-nums leading-none sm:text-7xl md:text-8xl">{formatSpeed(currentSpeedKmh)}</span>
+                  <span className="pb-1 text-xl text-slate-400 sm:pb-3 sm:text-2xl">km/h</span>
                 </div>
               </div>
 
-              <div className="min-w-[180px] rounded-3xl border border-slate-800 bg-slate-950/50 p-4 text-right">
+              <div className="w-full rounded-3xl border border-slate-800 bg-slate-950/50 p-3 text-right sm:w-auto sm:min-w-[170px] sm:p-4">
                 <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Accuracy</div>
-                <div className="mt-1 text-2xl font-medium tabular-nums">
+                <div className="mt-1 text-xl font-medium tabular-nums sm:text-2xl">
                   {gpsAccuracy == null ? "--" : `${gpsAccuracy.toFixed(0)} m`}
                 </div>
                 <div className="mt-3 text-xs uppercase tracking-[0.2em] text-slate-500">Session</div>
-                <div className="mt-1 text-lg font-medium tabular-nums">{isMonitoring ? `${monitoringDuration}s` : "stopped"}</div>
+                <div className="mt-1 text-base font-medium tabular-nums sm:text-lg">{isMonitoring ? `${monitoringDuration}s` : "stopped"}</div>
               </div>
             </div>
 
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-5 flex flex-wrap gap-2.5 sm:mt-6 sm:gap-3">
               {!isMonitoring ? (
                 <button
                   onClick={startMonitoring}
-                  className="rounded-2xl bg-emerald-400 px-6 py-4 text-lg font-semibold text-slate-950 transition hover:scale-[1.01] active:scale-[0.99]"
+                  className="rounded-2xl bg-emerald-400 px-4 py-3 text-base font-semibold text-slate-950 transition hover:scale-[1.01] active:scale-[0.99] sm:px-6 sm:py-4 sm:text-lg"
                 >
                   Start monitoring
                 </button>
               ) : (
                 <button
                   onClick={stopMonitoring}
-                  className="rounded-2xl bg-rose-400 px-6 py-4 text-lg font-semibold text-slate-950 transition hover:scale-[1.01] active:scale-[0.99]"
+                  className="rounded-2xl bg-rose-400 px-4 py-3 text-base font-semibold text-slate-950 transition hover:scale-[1.01] active:scale-[0.99] sm:px-6 sm:py-4 sm:text-lg"
                 >
                   Stop monitoring
                 </button>
@@ -553,7 +553,7 @@ export default function SpeedAlertPwa() {
 
               <button
                 onClick={() => requestWakeLock()}
-                className="rounded-2xl border border-slate-700 px-5 py-4 text-base font-medium text-slate-100 transition hover:bg-slate-800"
+                className="rounded-2xl border border-slate-700 px-4 py-3 text-base font-medium text-slate-100 transition hover:bg-slate-800 sm:px-5 sm:py-4"
               >
                 Re-acquire wake lock
               </button>
@@ -568,7 +568,7 @@ export default function SpeedAlertPwa() {
                     appendLog(`Audio test failed: ${error.message}`);
                   }
                 }}
-                className="rounded-2xl border border-slate-700 px-5 py-4 text-base font-medium text-slate-100 transition hover:bg-slate-800"
+                className="rounded-2xl border border-slate-700 px-4 py-3 text-base font-medium text-slate-100 transition hover:bg-slate-800 sm:px-5 sm:py-4"
               >
                 Test speaker
               </button>
@@ -576,7 +576,7 @@ export default function SpeedAlertPwa() {
               <button
                 onClick={promptInstall}
                 disabled={!deferredInstallPrompt || installState === "installed"}
-                className="rounded-2xl border border-sky-400/50 px-5 py-4 text-base font-medium text-sky-200 transition hover:bg-sky-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-2xl border border-sky-400/50 px-4 py-3 text-base font-medium text-sky-200 transition hover:bg-sky-500/10 disabled:cursor-not-allowed disabled:opacity-50 sm:px-5 sm:py-4"
               >
                 Install app
               </button>
@@ -594,7 +594,7 @@ export default function SpeedAlertPwa() {
             </div>
           </section>
 
-          <section className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/30">
+          <section className="rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-4 shadow-xl shadow-slate-950/30 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Warnings</p>
@@ -609,9 +609,9 @@ export default function SpeedAlertPwa() {
               </button>
             </div>
 
-            <div className="mt-5 space-y-3">
+            <div className="mt-4 space-y-3 sm:mt-5">
               {sortedWarnings.map((warning, index) => (
-                <div key={warning.id} className="grid gap-3 rounded-3xl border border-slate-800 bg-slate-950/50 p-4 md:grid-cols-[80px_1fr_1fr_auto_auto] md:items-center">
+                <div key={warning.id} className="grid gap-3 rounded-3xl border border-slate-800 bg-slate-950/50 p-3 sm:p-4 md:grid-cols-[80px_1fr_1fr_auto_auto] md:items-center">
                   <div className="text-sm font-medium text-slate-400">#{index + 1}</div>
 
                   <label className="block">
@@ -676,7 +676,7 @@ export default function SpeedAlertPwa() {
         </div>
 
         <section className="mt-6 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/30">
+          <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-4 shadow-xl shadow-slate-950/30 sm:p-6">
             <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Behavior notes</p>
             <div className="mt-4 space-y-3 text-slate-300">
               <p>
@@ -694,7 +694,7 @@ export default function SpeedAlertPwa() {
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-slate-950/30">
+          <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-4 shadow-xl shadow-slate-950/30 sm:p-6">
             <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Activity log</p>
             <div className="mt-4 space-y-2">
               {debugLog.length ? (
