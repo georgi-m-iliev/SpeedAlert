@@ -515,7 +515,7 @@ export default function SpeedAlertPwa() {
 
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <section className="rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-4 shadow-xl shadow-slate-950/30 sm:p-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="grid grid-cols-[1fr_auto] items-start gap-3 sm:gap-4">
               <div className="min-w-0">
                 <p className="text-sm uppercase tracking-[0.2em] text-slate-400">Live speed</p>
                 <div className="mt-2 flex items-end gap-2 sm:gap-3">
@@ -524,7 +524,7 @@ export default function SpeedAlertPwa() {
                 </div>
               </div>
 
-              <div className="w-full rounded-3xl border border-slate-800 bg-slate-950/50 p-3 text-right sm:w-auto sm:min-w-[170px] sm:p-4">
+              <div className="min-w-[132px] rounded-3xl border border-slate-800 bg-slate-950/50 p-3 text-right sm:min-w-[170px] sm:p-4">
                 <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Accuracy</div>
                 <div className="mt-1 text-xl font-medium tabular-nums sm:text-2xl">
                   {gpsAccuracy == null ? "--" : `${gpsAccuracy.toFixed(0)} m`}
